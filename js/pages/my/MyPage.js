@@ -56,6 +56,16 @@ export default class MyPage extends Component {
                             component: SortKeyPage
                         })
                     }}>标签排序</Text>
+                <Text 
+                    onPress={() => {
+                        this.props.navigator.push({
+                            component: CustomKeyPage,
+                            params: {
+                                ...this.props,
+                                isRemoveKey: true
+                            }
+                        })
+                    }}>标签移除</Text>
             </View>
         );
     }
