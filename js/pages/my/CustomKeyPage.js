@@ -10,22 +10,22 @@ import {
     View,
     TouchableOpacity,
     Image,
-    Alert,
     Text,
+    Alert,
     DeviceEventEmitter
 } from 'react-native'
 import CheckBox from 'react-native-check-box'
 import NavigationBar from '../../common/NavigationBar'
 import LanguageDao, {FLAG_LANGUAGE} from '../../expand/dao/LanguageDao'
 // import BackPressComponent from '../../common/BackPressComponent'
-// import ArrayUtils from '../../util/ArrayUtils'
+import ArrayUtils from '../../util/ArrayUtils'
 import ViewUtils from '../../util/ViewUtils'
 // import {ACTION_HOME,FLAG_TAB} from '../HomePage'
 export default class CustomKeyPage extends Component {
     constructor(props) {
         super(props);
         // this.backPress=new BackPressComponent({backPress:(e)=>this.onBackPress(e)});
-        // this.changeValues = [];
+        this.changeValues = [];
         // this.isRemoveKey=this.props.isRemoveKey?true:false;
         this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key)
         this.state = {
@@ -49,12 +49,32 @@ export default class CustomKeyPage extends Component {
             })
     }
     onSave() {
-
+        if (this.changeValues.length === 0) {
+            this.props.navigator.pop()
+            return
+        }
+        this.languageDao.save(this.state.dataArray)
+        this.props.navigator.pop()
     }
-    onClick() {
-
+    onClick(data) {
+        data.checked = !data.checked
+        ArrayUtils.updateArray(this.changeValues, data)
     }
     onBack() {
+        if (this.changeValues.length === 0) {
+            this.props.navigator.pop()
+            return
+        }
+        Alert.alert(
+            '提示',
+            '要保存修改吗？',
+            [
+              {text: '不保存', onPress: () => {
+                    this.props.navigator.pop()
+              }, style: 'cancel'},
+              {text: '保存', onPress: () => {this.onSave()}},
+            ]
+        )
         this.props.navigator.pop()
     }
     renderCheckBox(data) {
@@ -63,11 +83,12 @@ export default class CustomKeyPage extends Component {
             <CheckBox
                 style={{flex: 1, padding: 10}}
                 leftText={leftText}
+                isChecked={data.checked}
                 checkedImage={<Image
                     source={require('./img/ic_check_box.png')} />}
                 unCheckedImage={<Image
                     source={require('./img/ic_check_box_outline_blank.png')} />}
-                onClick={(data) => {
+                onClick={() => {
                     this.onClick(data)
                 }} />
         )

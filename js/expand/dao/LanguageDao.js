@@ -41,4 +41,13 @@ export default class LanguageDao {
 
         });
     }
+    clear(){
+        AsyncStorage.removeItem(this.flag,(error) => {
+            if (!error) {
+                console.log('删除字段 ' + this.flag + 'successfully')
+            } else {
+                console.log(error)
+            }
+        })
+    }
 }

@@ -16,6 +16,7 @@ import NavigationBar from "../../common/NavigationBar";
 // import {MORE_MENU} from "../../common/MoreMenu";
 // import BaseComponent from '../BaseComponent'
 import CustomKeyPage from "./CustomKeyPage";
+import SortKeyPage from "./SortKeyPage";
 // import SortKeyPagePage from "./SortKeyPagePage";
 // import {FLAG_LANGUAGE} from "../../expand/dao/LanguageDao";
 // import GlobalStyles from '../../../res/styles/GlobalStyles'
@@ -49,6 +50,12 @@ export default class MyPage extends Component {
                             component: CustomKeyPage
                         })
                     }}>自定义标签页</Text>
+                <Text 
+                    onPress={() => {
+                        this.props.navigator.push({
+                            component: SortKeyPage
+                        })
+                    }}>标签排序</Text>
             </View>
         );
     }
