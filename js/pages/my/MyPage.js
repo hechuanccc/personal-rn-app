@@ -10,7 +10,8 @@ import {
     Text,
     Platform,
     ScrollView,
-    TouchableHighlight
+    TouchableHighlight,
+    DeviceEventEmitter
 } from "react-native";
 import NavigationBar from "../../common/NavigationBar";
 // import {MORE_MENU} from "../../common/MoreMenu";

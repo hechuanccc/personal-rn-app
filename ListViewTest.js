@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Image,
   RefreshControl,
-  ListView
+  ListView,
+  DeviceEventEmitter
 } from 'react-native';
 import NavigationBar from './NavigationBar';
 import Toast, {DURATION} from 'react-native-easy-toast'

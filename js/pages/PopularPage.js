@@ -6,8 +6,10 @@ import {
   Image,
   TextInput,
   RefreshControl,
+  DeviceEventEmitter,
   ListView
 } from 'react-native';
+import RepositoryDetail from './RepositoryDetail'
 import ScrollableTabView,{ScrollableTabBar} from 'react-native-scrollable-tab-view';
 import NavigationBar from '../common/NavigationBar';
 import DataRepository from '../expand/dao/DataRepository';
@@ -54,7 +56,7 @@ export default class PopularPage extends Component{
 
             {this.state.languages.map((result,i,arr) => {
                 let lan = arr[i]
-                return lan.checked ? <PopularTab key={i} tabLabel={lan.name}></PopularTab> : null
+                return lan.checked ? <PopularTab key={i} tabLabel={lan.name} {...this.props}></PopularTab> : null
             })}
       </ScrollableTabView> : null
     return (<View style={styles.container}>
@@ -83,24 +85,53 @@ class PopularTab extends Component {
   componentDidMount() {
     this.loadData()
   }
+  onSelect(item) {
+    this.props.navigator.push({
+      component: RepositoryDetail,
+      params: {
+        item: item,
+        ...this.props
+      }
+    })
+  }
   loadData(){
     this.setState({
       isLoading: true
     })
     let url = URL + this.props.tabLabel + QUERY_STR;
-    this.dataRepository.fetchNetRepository(url)
-    .then(result=>{
-      this.setState({
-        dataSource: this.state.dataSource.cloneWithRows(result.items),
-        isLoading: false
+    this.dataRepository.fetchRepository(url)
+      .then(result=>{
+          let items = result && result.items ? result.items : result ? result : []
+          console.log('items')
+          console.log(items)
+          this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(items),
+            isLoading: false
+          });
+          if (result && result.update_date && !this.dataRepository.checkData(result.update_date)) {
+            DeviceEventEmitter.emit('showToast', '显示缓存数据')
+            return this.dataRepository.fetchNetRepository(url)
+          } else {
+            DeviceEventEmitter.emit('showToast', '数据过时')
+          }
+      })
+      .then(items => {
+        if (!items || items.length === 0) return;
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(items),
+        });
+        DeviceEventEmitter.emit('showToast', '显示网络数据')
+      })
+      .catch(error=>{
+          console.log(error)
       });
-    })
-    .catch(error=>{
-      console.log(error)
-    });
   }
   renderRow(data) {
-    return <RepositoryCell data={data}/>
+    return <RepositoryCell 
+              data={data}
+              key={data.id}
+              onSelect={() => this.onSelect(data)}
+           />
   }
   render() {
     return <View style={{flex:1}}>

@@ -9,11 +9,14 @@ import {
   StyleSheet,
   Text,
   Image,
-  View
+  View,
+  DeviceEventEmitter
 } from 'react-native';
 import TabNavigator from 'react-native-tab-navigator';
 import PopularPage from './PopularPage'
 import MyPage from './my/MyPage'
+import Toast, {DURATION} from 'react-native-easy-toast'
+import WebViewTest from '../../WebViewTest'
 
 export default class HomePage extends Component {
   constructor(props) {
@@ -21,6 +24,14 @@ export default class HomePage extends Component {
     this.state = {
       selectedTab: 'tb_popular',
     }
+  }
+  componentDidMount() {
+      this.listener = DeviceEventEmitter.addListener('showToast', (text) => {
+          this.toast.show(text, DURATION.LENGTH_LONG)
+      })
+  }
+  componentWillUnmount() {
+      this.listener && this.listener.remove()
   }
   render() {
     return (
@@ -33,7 +44,7 @@ export default class HomePage extends Component {
             renderSelectedIcon={() => <Image style={[styles.image, {tintColor: '#2196F3'}]} source={require('../../res/images/ic_polular.png')} />}
             selectedTitleStyle={{color: '#2196F3'}}
             onPress={() => this.setState({ selectedTab: 'tb_popular' })}>
-            <PopularPage />
+            <PopularPage {...this.props} />
           </TabNavigator.Item>
           <TabNavigator.Item
             selected={this.state.selectedTab === 'tb_trending'}
@@ -51,7 +62,7 @@ export default class HomePage extends Component {
             renderSelectedIcon={() => <Image style={[styles.image, {tintColor: 'red'}]} source={require('../../res/images/ic_polular.png')} />}
             selectedTitleStyle={{color: 'red'}}
             onPress={() => this.setState({ selectedTab: 'tb_favorite' })}>
-            <View style={styles.page1}></View>
+            <WebViewTest />
           </TabNavigator.Item>
           <TabNavigator.Item
             selected={this.state.selectedTab === 'tb_my'}
@@ -63,6 +74,7 @@ export default class HomePage extends Component {
             <MyPage {...this.props} />
           </TabNavigator.Item>
         </TabNavigator>
+        <Toast ref={toast => this.toast=toast} />
       </View>
     );
   }
