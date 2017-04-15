@@ -13,19 +13,19 @@ import RepositoryDetail from './RepositoryDetail'
 import ScrollableTabView,{ScrollableTabBar} from 'react-native-scrollable-tab-view';
 import NavigationBar from '../common/NavigationBar';
 import DataRepository, { FLAG_STORAGE} from '../expand/dao/DataRepository';
-import RepositoryCell from '../common/RepositoryCell'
+import TrendingCell from '../common/TrendingCell'
 import LanguageDao, {FLAG_LANGUAGE} from '../expand/dao/LanguageDao'
 
-const URL='https://api.github.com/search/repositories?q=';
-const QUERY_STR='&page=stars';
+const API_URL='https://github.com/trending/';
 
-export default class PopularPage extends Component{
+export default class TrendingPage extends Component{
   constructor(props){
     super(props);
-    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_key)
+    this.languageDao = new LanguageDao(FLAG_LANGUAGE.flag_language)
     // 类初始化后才能在自定义函数方法中调用
     this.state = {
-      languages: []
+      languages: [],
+      result: ''
     }
   }
 
@@ -34,6 +34,7 @@ export default class PopularPage extends Component{
   }
 
   loadData() {
+      this.languageDao.clear()
       this.languageDao.fetch()
           .then((result) => {
               console.log('keyData')
@@ -56,12 +57,12 @@ export default class PopularPage extends Component{
 
             {this.state.languages.map((result,i,arr) => {
                 let lan = arr[i]
-                return lan.checked ? <PopularTab key={i} tabLabel={lan.name} {...this.props}></PopularTab> : null
+                return lan.checked ? <TrendingTab key={i} tabLabel={lan.name} {...this.props}></TrendingTab> : null
             })}
       </ScrollableTabView> : null
     return (<View style={styles.container}>
       <NavigationBar
-        title={'最热'}
+        title={'趋势'}
           statusBar={{
             paddingTop:10
           }}
@@ -71,11 +72,11 @@ export default class PopularPage extends Component{
   }
 }
 
-class PopularTab extends Component {
+class TrendingTab extends Component {
   constructor(props){
     super(props);
     // 类初始化后才能在自定义函数方法中调用
-    this.dataRepository=new DataRepository(FLAG_STORAGE.flag_popular);
+    this.dataRepository=new DataRepository(FLAG_STORAGE.flag_trending);
     this.state={
       result:'',
       dataSource: new ListView.DataSource({rowHasChanged: (r1,r2) => r1 !== r2}),
@@ -98,7 +99,8 @@ class PopularTab extends Component {
     this.setState({
       isLoading: true
     })
-    let url = URL + this.props.tabLabel + QUERY_STR;
+    let url = this.genFetchUrl('?since=daily', this.props.tabLabel)
+    console.log('url ' + url)
     this.dataRepository.fetchRepository(url)
       .then(result=>{
           let items = result && result.items ? result.items : result ? result : []
@@ -126,8 +128,11 @@ class PopularTab extends Component {
           console.log(error)
       });
   }
+  genFetchUrl(timeSpan, category) {
+    return API_URL + category + timeSpan
+  }
   renderRow(data) {
-    return <RepositoryCell 
+    return <TrendingCell 
               data={data}
               key={data.id}
               onSelect={() => this.onSelect(data)}

@@ -1,8 +1,13 @@
 import {
     AsyncStorage,
 } from 'react-native';
-
+import GitHubTrending from 'GitHubTrending'
+export var FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'}
 export default class DataRepository {
+	constructor(flag) {
+		this.flag = flag
+		if (flag === FLAG_STORAGE.flag_trending) this.trending = new GitHubTrending()
+	}
 	fetchRepository(url) {
 		return new Promise((resolve, reject) => {
 			this.fetchLocalRepository(url)
@@ -48,20 +53,31 @@ export default class DataRepository {
 	fetchNetRepository(url){
 		let _this = this
 		return new Promise((resolve, reject) => {
-			fetch(url)
-				.then(response => response.json())
-				.then(result => {
-					if (!result) {
-						return reject(new Error('responseData is null'))
-					}
-					this.saveRepository(url, result.items, () => {
-						console.log('存储成功')
+			if (this.flag === FLAG_STORAGE.flag_trending) {
+				this.trending.fetchTrending(url)
+					.then((result) => {
+						if (!result) {
+							reject(new Error('responseData is null'))
+						}
+						this.saveRepository(url, result)
 					})
-					resolve(result.items)
-				})
-				.catch(error => {
-					reject(error)
-				})
+			}else {
+				fetch(url)
+					.then(response => response.json())
+					.then(result => {
+						if (!result) {
+							return reject(new Error('responseData is null'))
+						}
+						this.saveRepository(url, result.items, () => {
+							console.log('存储成功')
+						})
+						resolve(result.items)
+					})
+					.catch(error => {
+						reject(error)
+					})
+			}
+			
 		})
 	}
 	saveRepository(url, items, cb) {
@@ -70,7 +86,6 @@ export default class DataRepository {
 		AsyncStorage.setItem(url, JSON.stringify(wrapData), cb)
 	}
 	checkData(longTime) {
-		return false
 		let cDate = new Date()
 		let tDate = new Date()
 		tDate.setTime(longTime)
